@@ -3,6 +3,7 @@ from .pattern_42 import embed_42
 from .solver import bfs
 import sys
 
+
 class MazeGenerator:
     def __init__(
             self,
@@ -33,7 +34,11 @@ class MazeGenerator:
         self.fill_grid()
         self.pattern_42 = embed_42(self.grid_visited, self.width, self.height)
         self.dfs(self.entry[0], self.entry[1])
-        self.result = bfs(self.entry, self.exit_, self.grid, self.width, self.height)
+        if not self.perfect:
+            self.add_loops()
+        self.result = bfs(
+            self.entry, self.exit_, self.grid, self.width, self.height
+            )
 
     def fill_grid(self) -> None:
         for _ in range(self.height):
@@ -52,7 +57,8 @@ class MazeGenerator:
         random.shuffle(directions)
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
-            if nx < self.width and ny < self.height and nx >= 0 and ny >= 0 and not self.grid_visited[ny][nx]:
+            if nx < self.width and ny < self.height and nx >= 0 and ny >= 0 \
+                    and not self.grid_visited[ny][nx]:
                 self.grid_visited[ny][nx] = True
                 if nx > x:
                     self.grid[ny][nx] = self.grid[ny][nx] & ~ 8
@@ -69,6 +75,39 @@ class MazeGenerator:
 
                 self.history.append((nx, ny))
                 self.dfs(nx, ny)
+
+    def add_loops(self) -> None:
+        for y in range(self.height):
+            for x in range(self.width):
+                if x == 0 or x == self.width - 1 or y == 0 or \
+                        y == self.height - 1:
+                    continue
+                if (x, y) in self.pattern_42:
+                    continue
+                if self.grid[y][x] in [14, 13, 11, 7]:
+                    directions: list[tuple[int, int]] = [
+                        (0, -1), (1, 0), (0, 1), (-1, 0)
+                    ]
+                    random.shuffle(directions)
+                    for dx, dy in directions:
+                        nx, ny = dx + x, dy + y
+                        if (nx, ny) in self.pattern_42:
+                            continue
+                        if nx > x:
+                            self.grid[ny][nx] = self.grid[ny][nx] & ~ 8
+                            self.grid[y][x] = self.grid[y][x] & ~ 2
+                            break
+                        if nx < x:
+                            self.grid[ny][nx] = self.grid[ny][nx] & ~ 2
+                            self.grid[y][x] = self.grid[y][x] & ~ 8
+                            break
+                        if ny > y:
+                            self.grid[ny][nx] = self.grid[ny][nx] & ~ 1
+                            self.grid[y][x] = self.grid[y][x] & ~ 4
+                            break
+                        if ny < y:
+                            self.grid[ny][nx] = self.grid[ny][nx] & ~ 4
+                            self.grid[y][x] = self.grid[y][x] & ~ 1
 
     def result_path(self) -> str:
         result: str = ""

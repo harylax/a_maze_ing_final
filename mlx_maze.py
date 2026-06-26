@@ -39,6 +39,7 @@ class MlxMaze:
     def compute_cell_size(self) -> int:
         min_cell_size: int = 10
         _, w_screen, h_screen = self.mlx_maze.mlx_get_screen_size(self.mlx_ptr)
+        h_screen = int(h_screen * 0.8)
         if min_cell_size * self.width > w_screen \
                 or min_cell_size * self.height > h_screen:
             print(
@@ -52,7 +53,9 @@ class MlxMaze:
             min(w_screen // self.width, h_screen // self.height)
             )
 
-    def draw_rectangle(self, x: int, y: int, w: int, h: int, color: int) -> None:
+    def draw_rectangle(
+            self, x: int, y: int, w: int, h: int, color: int
+            ) -> None:
         for j in range(y, y + h):
             for i in range(x, x + w):
                 self.mlx_maze.mlx_pixel_put(
