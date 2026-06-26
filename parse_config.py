@@ -2,6 +2,7 @@ class MazeConfigError(Exception):
     def __init__(self, message):
         super().__init__(message)
 
+
 class MazeConfig:
     def __init__(self, filename: str) -> None:
         self.width: int = 20
@@ -71,7 +72,7 @@ class MazeConfig:
         if 'PERFECT' not in result.keys():
             self.errors_list.append('PERFECT')
         return result
-    
+
     def validate_config(self) -> None:
         if self.width < 2:
             raise MazeConfigError("WIDTH should be a positive value and greater than.")
@@ -81,7 +82,6 @@ class MazeConfig:
             raise MazeConfigError("ENTRY coordinates should be in the grid.")
         if not (0 <= self.exit_[0] < self.width and 0 <= self.exit_[1] < self.height):
             raise MazeConfigError("EXIT coordinates should be in the grid.")
-        
 
     def __str__(self) -> str:
         return (

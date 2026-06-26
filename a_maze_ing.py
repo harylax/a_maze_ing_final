@@ -3,6 +3,7 @@ from maze.generator import MazeGenerator
 from mlx_maze import MlxMaze
 import sys
 
+
 def write_output(mazegen: MazeGenerator) -> None:
     try:
         with open('maze.txt', 'w') as f:
@@ -14,6 +15,7 @@ def write_output(mazegen: MazeGenerator) -> None:
             f.write(output)
     except OSError as err:
         print(f"Error to write into the file maze.txt: {err}")
+
 
 def main() -> None:
     if len(sys.argv) != 2:
@@ -33,5 +35,6 @@ def main() -> None:
     write_output(mazegen)
     render: MlxMaze = MlxMaze(mazegen)
     render.run_maze()
+
 
 main()
