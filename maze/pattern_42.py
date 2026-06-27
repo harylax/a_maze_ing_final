@@ -3,6 +3,9 @@ def embed_42(
         width: int,
         height: int
         ) -> list[tuple[int, int]]:
+    if width < 9 or height < 7:
+        print("Maze is too small for the pattern 42")
+        return []
     schema: list[list[int]] = [
         [1, 0, 0, 0, 1, 1, 1],
         [1, 0, 0, 0, 0, 0, 1],

@@ -1,4 +1,4 @@
-from parse_config import MazeConfig
+from parse_config import MazeConfig, MazeConfigError
 from maze.generator import MazeGenerator
 from mlx_maze import MlxMaze
 import sys
@@ -21,7 +21,11 @@ def main() -> None:
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt")
         return
-    config: MazeConfig = MazeConfig(sys.argv[1])
+    try:
+        config: MazeConfig = MazeConfig(sys.argv[1])
+    except MazeConfigError as err:
+        print(f"{err}", file=sys.stderr)
+        sys.exit(1)
     mazegen: MazeGenerator = MazeGenerator(
         config.width,
         config.height,

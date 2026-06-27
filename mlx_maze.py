@@ -1,6 +1,7 @@
-from mlx import Mlx
+from mlx import Mlx  # type: ignore
 from maze.generator import MazeGenerator
 from typing import Any
+import sys
 
 
 class MlxMaze:
@@ -45,9 +46,9 @@ class MlxMaze:
             print(
                 f"{self.width} x {self.height} exceed screen size; "
                 f"max: {w_screen // min_cell_size} "
-                f"x {h_screen // min_cell_size}"
+                f"x {h_screen // min_cell_size}", file=sys.stderr
                 )
-            exit(1)
+            sys.exit(1)
         return max(
             min_cell_size,
             min(w_screen // self.width, h_screen // self.height)
@@ -69,14 +70,14 @@ class MlxMaze:
         px = x * self.cell_size
         py = y * self.cell_size
 
-        if wall_value == 15:
-            self.draw_rectangle(
-                px, py,
-                self.cell_size,
-                self.cell_size,
-                0XFFFF0099
-                )
-            return
+        # if wall_value == 15:
+        #     self.draw_rectangle(
+        #         px, py,
+        #         self.cell_size,
+        #         self.cell_size,
+        #         0XFFFF0099
+        #         )
+        #     return
 
         if wall_value & 1 == 1:
             self.draw_rectangle(px, py, self.cell_size, wall_size, color)
@@ -86,7 +87,7 @@ class MlxMaze:
                 wall_size, self.cell_size + wall_size,
                 color
                 )
-        elif wall_value & 2 == 2:
+        if wall_value & 2 == 2:
             self.draw_rectangle(
                 px + self.cell_size, py, wall_size, self.cell_size, color
                 )
@@ -97,11 +98,24 @@ class MlxMaze:
         if wall_value & 8 == 8:
             self.draw_rectangle(px,  py, wall_size, self.cell_size, color)
 
+    def draw_pattern_42(self) -> None:
+        for x, y in self.pattern_42:
+            self.draw_rectangle(
+                x * self.cell_size, y * self.cell_size,
+                self.cell_size, self.cell_size, 0XFFFF0099
+                )
+            for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                nx, ny = dx + x, dy + y
+                if (nx, ny) in self.pattern_42:
+                    continue
+                self.draw_cell(nx, ny, self.grid[ny][nx], self.wall_colors[0])
+
     def draw_maze(self) -> None:
         for j in range(self.height):
             for i in range(self.width):
                 element = self.grid[j][i]
                 self.draw_cell(i, j, element, self.wall_colors[0])
+        self.draw_pattern_42()
         self.draw_entry()
         self.draw_exit()
 
@@ -161,9 +175,10 @@ class MlxMaze:
             x, y = self.history[self.maze_animation_index]
             if (x, y) == self.entry:
                 self.draw_entry()
-            if (x, y) == self.exit_:
+            elif (x, y) == self.exit_:
                 self.draw_exit()
-            self.draw_cell(x, y, self.grid[y][x], self.wall_colors[0])
+            else:
+                self.draw_cell(x, y, self.grid[y][x], self.wall_colors[0])
             self.maze_animation_index += 1
         elif self.pattern_animation_index < len(self.pattern_42):
             x, y = self.pattern_42[self.pattern_animation_index]
@@ -172,8 +187,15 @@ class MlxMaze:
             self.draw_rectangle(
                 px, py, self.cell_size, self.cell_size, 0XFFFF0099
                 )
+            for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                nx, ny = dx + x, dy + y
+                if (nx, ny) in self.pattern_42:
+                    continue
+                self.draw_cell(nx, ny, self.grid[ny][nx], self.wall_colors[0])
             self.pattern_animation_index += 1
-        return
+        else:
+            self.draw_maze()
+            return
 
     def key_hook(self, keycode: int, _) -> None:
         if keycode == 65307:
@@ -278,7 +300,11 @@ class MlxMaze:
             self.wall_colors = self.wall_colors[1:] + self.wall_colors[:1]
             self.refresh()
 
+    def close_hook(self, _) -> None:
+        self.mlx_maze.mlx_loop_exit(self.mlx_ptr)
+
     def run_maze(self) -> None:
+        self.mlx_maze.mlx_hook(self.win_ptr, 33, 0, self.close_hook, None)
         self.mlx_maze.mlx_loop_hook(self.mlx_ptr, self.animate_maze, None)
         self.mlx_maze.mlx_key_hook(self.win_ptr, self.key_hook, None)
         self.mlx_maze.mlx_loop(self.mlx_ptr)
