@@ -108,6 +108,7 @@ class MazeGenerator:
                         if ny < y:
                             self.grid[ny][nx] = self.grid[ny][nx] & ~ 4
                             self.grid[y][x] = self.grid[y][x] & ~ 1
+                            break
 
     def result_path(self) -> str:
         result: str = ""
